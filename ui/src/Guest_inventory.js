@@ -10,7 +10,6 @@ const GuestInventory = () => {
     const navigate = useNavigate();
     const [items, setItems] = useState([]);
 
-  
     useEffect(() => {
         fetch(baseUrl)
             .then((res) => res.json())
@@ -18,8 +17,8 @@ const GuestInventory = () => {
             .catch((error) => console.error('Error fetching data:', error));
     }, []);
 
-    const handleClick = () => {
-        navigate('/Guest_details', { state: {} });
+    const handleClick = (id) => {
+        navigate('/Guest_details', { state: { id } });
     };
 
     const buttonStyle = {
@@ -33,7 +32,7 @@ const GuestInventory = () => {
     };
 
     return (
-        <div className='GuestInventory'> 
+        <div className='GuestInventory'>
             <h1>Welcome Guest</h1>
             <h2>All Inventory</h2>
             <Card>
@@ -44,11 +43,11 @@ const GuestInventory = () => {
                             <p>ITEM ID: {item.id}</p>
                             <p>ITEM Description: {item.item_description}</p>
                             <p>Quantity: {item.quantity}</p>
-                            <Button 
-                                onClick={handleClick}
+                            <Button
+                                onClick={() => handleClick(item.id)}
                                 className="p-button destination-button"
-                                label="View Details" 
-                                icon="pi pi-info-circle" 
+                                label="View Details"
+                                icon="pi pi-info-circle"
                                 style={buttonStyle}
                             />
                         </div>
