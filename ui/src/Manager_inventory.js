@@ -26,6 +26,30 @@ const ManagerInventory = () => {
         navigate('/Manager_add_form', { state: { } });
     };
 
+    const deleteClick = async (id) => {
+        const deleteUrl = `http://localhost:5080/delete/${id}`;
+      
+        try {
+          const response = await fetch(deleteUrl, {
+            method: 'DELETE',
+            headers: {
+              'Accept': 'application/json, text/plain, */*',
+              'Content-Type': 'application/json',
+            },
+          });
+
+          window.location.reload();
+      
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          } 
+         
+        } catch (error) {
+          console.error('Error deleting data:', error);
+    
+        }
+      };
+
     const buttonStyle = {
         flex: 1,
         minWidth: 0,
@@ -61,6 +85,13 @@ const ManagerInventory = () => {
                                 onClick={() => handleClick(item.id)}
                                 className="p-button destination-button"
                                 label="View Details"
+                                icon="pi pi-info-circle"
+                                style={buttonStyle}
+                            />
+                            <Button
+                                onClick={() => deleteClick(item.id)}
+                                className="p-button destination-button"
+                                label="Delete Item"
                                 icon="pi pi-info-circle"
                                 style={buttonStyle}
                             />
