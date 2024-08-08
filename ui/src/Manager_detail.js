@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Card } from 'primereact/card';
+import { Button } from 'primereact/button';
 
 const ManagerDetail = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const { id } = location.state || {};
     const [itemDetails, setItemDetails] = useState(null);
 
@@ -13,7 +15,7 @@ const ManagerDetail = () => {
                 try {
                     const response = await fetch(`http://localhost:5080/item`);
                     const data = await response.json();
-                    const filteredDetails = data.find(item => item.id == id);
+                    const filteredDetails = data.find(item => item.id === id);
                     setItemDetails(filteredDetails);
                 } catch (error) {
                     console.error('Error fetching item data:', error);
@@ -24,9 +26,15 @@ const ManagerDetail = () => {
         }
     }, [id]);
 
+    const handleClick = (id) => {
+        navigate('/Manager_detail', { state: { id } });
+    };
+
     if (!itemDetails) {
         return <p>Loading...</p>;
     }
+
+    const buttonStyle = {};
 
     return (
         <div className='ItemDetail'>
@@ -38,6 +46,13 @@ const ManagerDetail = () => {
                         <p>ITEM ID: {itemDetails.id}</p>
                         <p>ITEM Description: {itemDetails.item_description}</p>
                         <p>Quantity: {itemDetails.quantity}</p>
+                        <Button
+                            onClick={() => handleClick(itemDetails.id)} 
+                            className="p-button destination-button"
+                            label="Edit Item"
+                            icon="pi pi-info-circle"
+                            style={buttonStyle}
+                        />
                     </div>
                 </div>
             </Card>

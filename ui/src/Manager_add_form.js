@@ -31,10 +31,8 @@ function ManagerAdd() {
 
       const result = await response.json();
       console.log(result);
-      // You can handle the response here or show a success message
     } catch (error) {
       console.error(error);
-      // You can handle the error here or show an error message
     }
   }
 

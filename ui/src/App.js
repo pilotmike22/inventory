@@ -1,4 +1,5 @@
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
+import React from 'react';
 import Homepage from './Home';
 import GuestDetail from './Guest_details';
 import GuestInventory from './Guest_inventory';
