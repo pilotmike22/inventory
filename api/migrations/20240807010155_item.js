@@ -8,7 +8,7 @@ exports.up = function(knex) {
         table.string('item_name', 25);
         table.string('item_description', 200);
         table.integer('quantity');
-        table.integer('user_id').unsigned().references('username').inTable('users');
+        table.integer('user_id').unsigned().references('id').inTable('users');
       })
 };
 
