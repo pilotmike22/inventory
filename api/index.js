@@ -1,6 +1,8 @@
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 const port = 5080;
 
 
@@ -8,8 +10,6 @@ const knex = require("knex")(
     require("./knexfile.js")[process.env.NODE_ENV || "development"]
 );
 
-
-const SECRET_KEY = "my_secret_key"; 
 
 //CREATE APP
 
@@ -25,44 +25,35 @@ app.use(morgan("tiny")); //MORGAN
 
 //ROUTES
 
-app.post("/verify", async (req, res) => {
+const verifyUserLogin = async (username, password) => {
     try {
-        const { user, pass, type } = req.body;
-
-        if (!user || !pass || !type) {
-            return res.status(400).json({ message: "Missing required fields" });
+        const user = await knex('users').select('*').where('username', username).first(); // Use .first() to get a single user
+        if (!user) {
+            return { status: 'error', error: 'User not found' };
         }
-
-        let query = await knex('users').select("*").where("username", user);
-
-        if (type === "login") {
-            if (query.length === 1 && await bcrypt.compare(pass, query[0].password)) {
-                const token = jwt.sign({ username: user }, SECRET_KEY, { expiresIn: '1d' });
-
-                await knex('users').update({ auth_token: token }).where("username", user);
-
-                res.cookie('auth_token', token, { httpOnly: true, secure: false });
-                res.status(200).json({ message: "Logging you in", token });
-            } else {
-                res.status(404).json({ message: "Incorrect username or password" });
-            }
-        } else if (type === "create") {
-            if (query.length === 0) {
-                const hashedPassword = await bcrypt.hash(pass, 10);
-                await knex('users').insert({ username: user, password: hashedPassword, auth_token: '' });
-                res.status(200).json({ message: "User created" });
-            } else {
-                res.status(401).json({ message: "User exists with that username already" });
-            }
-        } else {
-            res.status(404).json({ message: "Invalid operation" });
+        if (await bcrypt.compare(password, user.password)) {
+            const token = jwt.sign({ id: user.id, username: user.username, type: 'user' }, JWT_SECRET, { expiresIn: '1d' });
+            return { status: 'ok', data: token };
         }
+        return { status: 'error', error: 'Invalid password' };
     } catch (error) {
-        console.error("Server error:", error); 
-        res.status(500).json({ message: "Internal server error" });
+        console.log(error);
+        return { status: 'error', error: 'Internal server error' };
+    }
+};
+
+// Login Route
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body; // Use 'username' as defined
+    const response = await verifyUserLogin(username, password); // Use 'username' instead of 'email'
+    if (response.status === 'ok') {
+        // Store JWT token as a cookie in the browser
+        res.cookie('token', response.data, { maxAge: 2 * 60 * 60 * 1000, httpOnly: true }); // Set token from response
+        res.redirect('/Manager_inventory');
+    } else {
+        res.json(response);
     }
 });
-
 
 
 
@@ -169,19 +160,21 @@ app.patch("/patch/:id", async (req, res) => {
 });
 
 
-app.post("/post/users", async (req, res) => {
+app.post("/post/signup", async (req, res) => {
     try {
         const first_name = req.body.first_name;
         const last_name = req.body.last_name;
         const username = req.body.username;
         const password = req.body.password;
 
+        const hashedPassword = await bcrypt.hash(password, 10);
+
     
         await knex('users').insert({
             first_name: first_name,
             last_name: last_name,
             username: username,
-            password: password
+            password: hashedPassword
         });
 
         res.status(200).send("Item Added");

@@ -1,178 +1,81 @@
-import { useState } from 'react';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
-const addServer = 'http://localhost:5080/post';
+const itemEndpoint = `http://localhost:5080/post/item`;
 
-function ManagerAdd() {
-  const [inputs, setInputs] = useState({});
+const AddForm = () => {
+  const initialFormState = { id: null, item_name: "", item_description: "", quantity: "" };
+  const [item, setItem] = useState(initialFormState); 
 
-  const handleChange = (event) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    setInputs(values => ({ ...values, [name]: value }));
-  }
+  const navigate = useNavigate();
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setItem((prevItem) => ({ ...prevItem, [name]: value }));
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (!item.item_name || !item.item_description || !item.quantity ) return;
 
     try {
-      const response = await fetch(addServer, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json, text/plain, */*',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: inputs.item_name,
-          description: inputs.item_description,
-          username: inputs.username,
-          quantity: inputs.quantity,
-        }),
-      });
-
-      const result = await response.json();
-      console.log(result);
+      const response = await axios.post(itemEndpoint, item);
+      console.log('Response:', response);
+      navigate('/Manager_inventory', { state: {} });
     } catch (error) {
-      console.error(error);
+      console.error('Error submitting form data:', error);
     }
-  }
+  };
 
   return (
-    <div>
-      <h1>Add New Item</h1>
-      <form onSubmit={handleSubmit}>
-        <label>
-          Item Name:
-          <input 
-            type="text" 
-            name="item_name" 
-            value={inputs.item_name || ""} 
-            onChange={handleChange}
-          />
-        </label>
-        <label>
-          Item Description:
-          <input 
-            type="text" 
-            name="item_description" 
-            value={inputs.item_description || ""} 
-            onChange={handleChange}
-          />
-        </label>
-        <label>
-          Enter your username:
-          <input 
-            type="text" 
-            name="username" 
-            value={inputs.username || ""} 
-            onChange={handleChange}
-          />
-        </label>
-        <label>
-          Quantity:
-          <input 
-            type="number" 
-            name="quantity" 
-            value={inputs.quantity || ""} 
-            onChange={handleChange}
-          />
-        </label>
-        <button type="submit">Submit</button>
-      </form>
+    <div className="loginPage">
+      <div className="signUp">
+        <h1>Add New Item</h1>
+        <form onSubmit={handleSubmit}>
+          <div className="formgroup">
+            <label htmlFor="item_name">Item Name</label>
+            <input
+              id="item_name"
+              type="text"
+              name="item_name"
+              value={item.item_name}
+              onChange={handleInputChange}
+              className="form-control"
+              required
+            />
+          </div>
+          <div className="formgroup">
+            <label htmlFor="item_description">Description</label>
+            <input
+              id="item_description"
+              type="text"
+              name="item_description"
+              value={item.item_description}
+              onChange={handleInputChange}
+              className="form-control"
+              required
+            />
+          </div>
+          <div className="formgroup">
+            <label htmlFor="quantity">Quantity</label>
+            <input
+              id="quantity"
+              type="number"
+              name="quantity"
+              value={item.quantity}
+              onChange={handleInputChange}
+              className="form-control"
+              required
+            />
+          </div>
+          <button type="submit" className="btn btn-sm btn-secondary">
+            Add Item
+          </button>
+        </form>
+      </div>
     </div>
   );
-}
+};
 
-export default ManagerAdd;
-
-
-
-
-
-
-// import { useState } from 'react';
-
-
-// const addServer = 'http://localhost:5080/post';
-
-
-// function ManagerAdd() {
-//   const [inputs, setInputs] = useState({});
-
-//   const handleChange = (event) => {
-//     const name = event.target.name;
-//     const value = event.target.value;
-//     setInputs(values => ({...values, [name]: value}))
-//   }
-
-//   const handleSubmit = (event) => {
-//     event.preventDefault();
-//     const response = await fetch(addServer, {
-//         method: 'POST',
-//         headers: {
-//           'Accept': 'application/json, text/plain, */*',
-//           'Content-Type': 'application/json',
-//         },
-//         body: JSON.stringify({
-//           name: item_name,
-//           description: item_description,
-//           username: username,
-//           quantity: quantity,
-//         }),
-//       })
-//         .then(res => res.json())
-//         .then(res => {
-//           console.log(res);
-//           return res;
-//         })
-//         .catch(error => {
-//           console.log(error);
-//           return { message: 'Error Connecting to the Server' };
-//         });
-    
-//       return response;
-//   }
-
-//   return (
-//         <div>
-//             <h1> Add New Item</h1>
-//             <form onSubmit={handleSubmit}>
-//             <label>Item Name:
-//             <input 
-//                 type="text" 
-//                 name="item_name" 
-//                 value={inputs.item_name || ""} 
-//                 onChange={handleChange}
-//             />
-//             </label>
-//             <label>Item Description:
-//             <input 
-//                 type="text" 
-//                 name="item_description" 
-//                 value={inputs.item_description || ""} 
-//                 onChange={handleChange}
-//             />
-//             </label>
-//             <label>Enter your username:
-//             <input 
-//                 type="text" 
-//                 name="username" 
-//                 value={inputs.username || ""} 
-//                 onChange={handleChange}
-//             />
-//             </label>
-//             <label>Quantity:
-//                 <input 
-//                 type="number" 
-//                 name="quantity" 
-//                 value={inputs.quantity || ""} 
-//                 onChange={handleChange}
-//                 />
-//                 </label>
-//                 <input type="submit" />
-//             </form>
-//         </div>
-//   )
-
-// }
-
-// export default ManagerAdd;
+export default AddForm;
